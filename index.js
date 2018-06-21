@@ -26,7 +26,7 @@ function calculatedMetrics(data) {
     data[key].mean = fixNum(mean(data[key].data));
     data[key].median = fixNum(median(data[key].data));
   });
-  console.log('data', data);
+  console.log('Report Data', data);
   return data;
 }
 
