@@ -71,7 +71,6 @@ async function run({url, runs}) {
 
 const args = parseArgs(process.argv);
 const results = run(args);
-console.log('results', results);
 
 /*
 {
