@@ -3,6 +3,7 @@ const lighthouse = require('lighthouse');
 const chromeLauncher = require('chrome-launcher');
 const lodash = require('lodash');
 const config = require('./config');
+const {fixNum, mean, median} = require('./util/number');
 
 function parseArgs(args) {
   // if (args.length < 3) {
@@ -19,6 +20,16 @@ function parseArgs(args) {
   return argsObj;
 }
 
+function calculatedMetrics(data) {
+  const keys = Object.keys(data);
+  keys.forEach((key) => {
+    data[key].mean = fixNum(mean(data[key].data));
+    data[key].median = fixNum(median(data[key].data));
+  });
+  console.log('data', data);
+  return data;
+}
+
 function parseResults(results, audits) {
   const report = {};
 
@@ -27,16 +38,11 @@ function parseResults(results, audits) {
     reportCategories.forEach(category => {
       const audit = audits.find(audit => audit.id === category.id);
       if (audit) {
-        // console.log('metrics', audit.metrics);
         return audit.metrics.forEach(metric => {
+          report[metric] = report[metric] || {};
+          report[metric].data = report[metric].data || [];
           const {result} = category.audits.find(catAudit => catAudit.id === metric);
-          if (!report[`${metric}`]) {
-            console.log('first');
-            report[`${metric}`] = [result.rawValue];
-          } else {
-            console.log('second');
-            report[`${metric}`].push(result.rawValue);
-          }
+          report[metric].data.push(Number.parseFloat(result.rawValue));
         });
       }
     });
@@ -59,8 +65,25 @@ async function run({url, runs}) {
         chrome.kill().then(() => results));
     }));
   }
-  console.log('parsedResults', parseResults(result, config.audits));
+  const parsed = parseResults(result, config.audits);
+  return calculatedMetrics(parsed);
 }
 
 const args = parseArgs(process.argv);
-run(args);
+const results = run(args);
+console.log('results', results);
+
+/*
+{
+  metric: {
+    data: [],
+    mean: Number,
+    median: Number
+  },
+  metric: {
+    data: [],
+    mean: Number,
+    median: Number
+  },
+}
+*/
