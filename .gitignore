@@ -7,3 +7,5 @@ node_modules
 # Editor
 jsconfig.json
 .vscode
+
+yarn-error.log
